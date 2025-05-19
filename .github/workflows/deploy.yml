@@ -20,9 +20,13 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
+        working-directory: ${{ github.workspace }}
+
 
       - name: Build React App
         run: npm run build
+        working-directory: ${{ github.workspace }}
+
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
