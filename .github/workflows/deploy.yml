@@ -3,7 +3,7 @@ name: Deploy Bitcoin Investment App
 on:
   push:
     branches:
-      - main  # Or change to your deployment branch
+      - main  # Change if your default branch differs
 
 jobs:
   build-and-deploy:
@@ -20,16 +20,13 @@ jobs:
 
       - name: Install Dependencies
         run: npm install
-        working-directory: ${{ github.workspace }}
-
 
       - name: Build React App
         run: npm run build
-        working-directory: ${{ github.workspace }}
-
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build
+          force_orphan: true   # Create branch if missing and force push
