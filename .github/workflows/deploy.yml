@@ -5,6 +5,9 @@ on:
     branches:
       - main  # Change if your default branch differs
 
+permissions:
+  contents: write  # Allows pushing to the repository
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -29,4 +32,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build
-          force_orphan: true   # Create branch if missing and force push
+          force_orphan: true
