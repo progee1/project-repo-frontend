@@ -14,15 +14,25 @@ const BitcoinInvestmentApp = () => {
     { name: 'Bob', returns: '9.8%' },
     { name: 'Carlos', returns: '15.2%' }
   ]);
+  const [error, setError] = useState('');
+  const token = localStorage.getItem('token');
+  const baseUrl = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
-    fetch('https://api.coindesk.com/v1/bpi/currentprice/BTC.json')
-      .then(response => response.json())
-      .then(data => {
-        setBtcPrice(parseFloat(data.bpi.USD.rate.replace(',', '')));
-      })
-      .catch(error => console.error('Error fetching BTC price:', error));
-  }, []);
+    if (!token) {
+      setError('User not authenticated');
+      return;
+    }
+
+    fetch(`${baseUrl}/bitcoin-price`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(res => res.json())
+      .then(data => setBtcPrice(data.price))
+      .catch(() => setError('Failed to fetch BTC price'));
+  }, [baseUrl, token]);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -35,13 +45,30 @@ const BitcoinInvestmentApp = () => {
 
   const handleCalculate = () => {
     const usd = parseFloat(usdAmount);
-    if (!isNaN(usd) && usd > 0 && btcPrice) {
-      const calculatedBtc = (usd / btcPrice).toFixed(6);
-      setBtcAmount(calculatedBtc);
-      setPortfolio(prev => [...prev, { usd, btc: calculatedBtc }]);
-    } else {
-      setBtcAmount(null);
+    if (!usd || isNaN(usd) || usd <= 0) {
+      setError('Please enter a valid USD amount');
+      return;
     }
+
+    fetch(`${baseUrl}/investment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ amountUsd: usd }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.btcAmount) {
+          setBtcAmount(data.btcAmount.toFixed(6));
+          setPortfolio(prev => [...prev, { usd, btc: data.btcAmount.toFixed(6) }]);
+          setError('');
+        } else {
+          setError('Failed to calculate investment');
+        }
+      })
+      .catch(() => setError('Failed to connect to backend'));
   };
 
   return (
@@ -63,103 +90,10 @@ const BitcoinInvestmentApp = () => {
             />
           </div>
 
-          <div className="mb-8 text-center">
-            <h2 className="text-xl font-bold mb-2">Learn About Our Company</h2>
-            <div className="aspect-w-16 aspect-h-9">
-              <iframe
-                width="100%"
-                height="315"
-                src="https://www.youtube.com/embed/5h-6KWUCbWA?si=3IOL4vOVxajqv54z"
-                title="Company Overview"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-
           <Card className="shadow-lg mb-8">
-            <CardContent className="p-6 space-y-4">
-              <h2 className="text-xl font-bold">Our Services</h2>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
-                <li>Crypto / Forex</li>
-                <li>Real Estate</li>
-                <li>Fixed Income</li>
-                <li>Multi Asset</li>
-                <li>Alternatives</li>
-                <li>Stocks</li>
-                <li>Planning Services</li>
-                <li>NFP</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg mb-8">
-            <CardContent className="p-6 space-y-4">
-              <h2 className="text-xl font-bold">Investment Plans</h2>
-              <ul className="space-y-4 text-gray-700">
-                <li>
-                  <strong>Starter Plan:</strong> Minimum $100 - Weekly returns up to 5%
-                </li>
-                <li>
-                  <strong>Silver Plan:</strong> Minimum $1,000 - Weekly returns up to 7%
-                </li>
-                <li>
-                  <strong>Gold Plan:</strong> Minimum $5,000 - Weekly returns up to 10%
-                </li>
-                <li>
-                  <strong>Platinum Plan:</strong> Minimum $10,000 - Weekly returns up to 15%
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg mb-8">
-            <CardContent className="p-6 space-y-4">
-              <h2 className="text-xl font-bold">Investment License</h2>
-              <p>
-                We are licensed and compliant. Learn more about our government-recognized investment partnership:
-                <br />
-                <a
-                  href="https://www.gov.uk/government/news/homes-england-invests-in-schroders-capitals-real-estate-impact-fund"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  View Investment License
-                </a>
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg mb-8">
-            <CardContent className="p-6 space-y-2">
-              <h2 className="text-xl font-bold">Contact Info</h2>
-              <p>Email: contact@bitcoininvestments.com</p>
-              <p>Phone: +1 (555) 123-4567</p>
-              <p>Address: 123 Crypto Lane, Blockchain City, NY 10001</p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg mb-8">
-            <CardContent className="p-6 space-y-4">
-              <h2 className="text-xl font-bold">Copy Trading</h2>
-              <p className="text-gray-700">Follow top-performing traders and copy their trades in real-time:</p>
-              <ul className="space-y-2">
-                {copyTraders.map((trader, index) => (
-                  <li key={index} className="flex justify-between items-center border p-2 rounded">
-                    <span className="font-medium">{trader.name}</span>
-                    <span className="text-green-600">Returns: {trader.returns}</span>
-                    <Button size="sm">Copy</Button>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg">
             <CardContent className="p-6 space-y-6">
               <h1 className="text-2xl font-bold text-center">Bitcoin Investment Calculator</h1>
+              {error && <p className="text-red-500 text-center">{error}</p>}
               <div className="space-y-2">
                 <label className="block text-sm font-medium">Current BTC Price (USD)</label>
                 <Input value={btcPrice ? `$${btcPrice.toLocaleString()}` : 'Loading...'} disabled />
