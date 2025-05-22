@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import googleTranslateElementInit from './translate';
+import fetchBitcoinPrice from '@/api/fetchBitcoinPrice';
 
 const BitcoinInvestmentApp = () => {
   const [btcPrice, setBtcPrice] = useState(null);
@@ -16,7 +17,6 @@ const BitcoinInvestmentApp = () => {
   ]);
   const [error, setError] = useState('');
   const token = localStorage.getItem('token');
-  const baseUrl = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
     if (!token) {
@@ -24,15 +24,14 @@ const BitcoinInvestmentApp = () => {
       return;
     }
 
-    fetch(`${baseUrl}/bitcoin-price`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => res.json())
-      .then(data => setBtcPrice(data.price))
-      .catch(() => setError('Failed to fetch BTC price'));
-  }, [baseUrl, token]);
+    fetchBitcoinPrice(token).then(price => {
+      if (price) {
+        setBtcPrice(price);
+      } else {
+        setError('Failed to fetch BTC price');
+      }
+    });
+  }, [token]);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -42,6 +41,8 @@ const BitcoinInvestmentApp = () => {
 
     window.googleTranslateElementInit = googleTranslateElementInit;
   }, []);
+
+  const baseUrl = process.env.REACT_APP_API_BASE_URL;
 
   const handleCalculate = () => {
     const usd = parseFloat(usdAmount);
