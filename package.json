@@ -10,5 +10,6 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "echo \"No tests specified\" && exit 0",
-    "ej
+    "test": "echo \"No tests specified\" && exit 0"
+  }
+}
