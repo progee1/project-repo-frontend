@@ -1,12 +1,10 @@
-name: Deploy Bitcoin Investment App
+name: Frontend CI/CD
 
 on:
   push:
-    branches:
-      - main  # Change if your default branch differs
-
-permissions:
-  contents: write  # Allows pushing to the repository
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   build-and-deploy:
@@ -27,9 +25,14 @@ jobs:
       - name: Build React App
         run: npm run build
 
+      # Optional: run tests
+      - name: Run Tests
+        run: npm test
+        continue-on-error: true
+
+      # Deploy to GitHub Pages example (adjust for your deploy target)
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build
-          force_orphan: true
