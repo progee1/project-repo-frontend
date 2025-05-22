@@ -10,6 +10,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    permissions: # Add this block to explicitly set permissions
+      contents: write
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -25,12 +28,10 @@ jobs:
       - name: Build React App
         run: npm run build
 
-      # Optional: run tests
       - name: Run Tests
         run: npm test
         continue-on-error: true
 
-      # Deploy to GitHub Pages example (adjust for your deploy target)
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
