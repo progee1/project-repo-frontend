@@ -2,6 +2,7 @@
   "name": "bitcoin-frontend",
   "version": "1.0.0",
   "private": true,
+  "homepage": "https://progee1.github.io/project-repo-frontend",
   "dependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
